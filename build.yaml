@@ -1,0 +1,12 @@
+targets:
+  $default:
+    builders:
+      injectable_generator:injectable_builder:
+        options:
+          auto_register: true
+          # auto register any class with a name matches the given pattern
+          class_name_pattern:
+            "Service$|RepositoryImpl$|Bloc$|Cubit$|DataSourceImpl$|Mapper$|UseCase$|Client$"
+            # auto register any class inside a file with a
+          # name matches the given pattern
+          file_name_pattern: "_cubit$"
