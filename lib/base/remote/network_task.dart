@@ -17,14 +17,16 @@ class NetworkTask<T> {
   final FutureTask<T> _task;
 
   Future<CustomResult<T>> execute({ErrorMapping? errorMapping}) =>
-      _task().then((response) => CustomResult<T>(response)).catchError(
-          (e) async => handleNetworkError(e, errorMapping: errorMapping));
+      _task().then((response) {
+        return CustomResult<T>(response);
+      }).catchError((e) async {
+        return handleNetworkError(e, errorMapping: errorMapping);
+      });
 
-  CustomResult<T> handleNetworkError(Error error,
-      {ErrorMapping? errorMapping}) {
+  CustomResult<T> handleNetworkError(error, {ErrorMapping? errorMapping}) {
     logger.e(error);
     if (error is DioError) {
-      final e = error as DioError;
+      final e = error;
       if (DioErrorType.receiveTimeout == e.type ||
           DioErrorType.connectTimeout == e.type) {
         logger.e('CONNECT_TIMEOUT');
@@ -57,7 +59,7 @@ class NetworkTask<T> {
     return _onError(error, error.stackTrace);
   }
 
-  CustomResult<T> _onError(Error error, StackTrace? stackTrace) {
+  CustomResult<T> _onError(error, StackTrace? stackTrace) {
     logger.e('NetworkError', error, stackTrace);
     return CustomResult.failure(Failure.networkException(error.toString()));
   }
