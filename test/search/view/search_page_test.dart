@@ -5,6 +5,8 @@
 // license that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
+import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meta_weather/base/index.dart';
@@ -44,19 +46,45 @@ void main() async {
       when(() => searchCubit.getLocation('')).thenReturn(null);
       await tester.pumpApp(const SearchPage());
       await tester.tap(find.byKey(searchButtonKey));
+
       verify(() => searchCubit.getLocation('')).called(1);
     });
     testWidgets(
         'when user not enter any keyword and then'
         ' click on search button show snackbar with error message No Result ',
         (tester) async {
+      whenListen(
+        searchCubit,
+        Stream.fromIterable([
+          const BaseState<LocationEntity>.initial(),
+          const BaseState<LocationEntity>.noData()
+        ]),
+      );
       when(() => searchCubit.state)
-          .thenReturn(const BaseState<LocationEntity>.initial());
-      when(() => searchCubit.getLocation(''))
           .thenReturn(const BaseState<LocationEntity>.noData());
+
       await tester.pumpApp(const SearchPage());
       await tester.tap(find.byKey(searchButtonKey));
+      await tester.pump();
+      expect(find.byType(SnackBar), findsOneWidget);
       expect(find.text('No Result'), findsOneWidget);
+    });
+    testWidgets('when cubit emit error show snackbar', (tester) async {
+      whenListen(
+        searchCubit,
+        Stream.fromIterable([
+          const BaseState<LocationEntity>.initial(),
+          const BaseState<LocationEntity>.failure('Error')
+        ]),
+      );
+      when(() => searchCubit.state)
+          .thenReturn(const BaseState<LocationEntity>.failure('Error'));
+
+      await tester.pumpApp(const SearchPage());
+      await tester.tap(find.byKey(searchButtonKey));
+      await tester.pump();
+      expect(find.byType(SnackBar), findsOneWidget);
+      expect(find.text('Error'), findsOneWidget);
     });
   });
 }
